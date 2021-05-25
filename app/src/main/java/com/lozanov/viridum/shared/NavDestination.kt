@@ -2,20 +2,20 @@ package com.lozanov.viridum.shared
 
 import android.os.Parcelable
 import androidx.annotation.StringRes
+import androidx.navigation.compose.NamedNavArgument
+import com.lozanov.viridum.R
 
 sealed class NavDestination(val route: String,
-                            @StringRes val resourceId: Int) : Parcelable {
-    // TODO: Add destinations (and maybe try to add bottomnav navGraph sealed class as nested sealed class here w/ own destinations?)
+                            val arguments: List<NamedNavArgument> = emptyList()) {
+    object Root : NavDestination("")
 
-    @Parcelize
-    object Onboarding : NavDestination("onboarding", R.string.onboarding)
+    object Splash : NavDestination("splash")
 
-    @Parcelize
-    object Login : NavDestination("login", R.string.login)
+    object Onboarding : NavDestination("onboarding")
 
-    @Parcelize
-    object ARScreen : NavDestination("ar_screen", R.string.ar_screen)
+    object Login : NavDestination("login")
 
-    @Parcelize
-    object ModelSelection : NavDestination("model_selection", R.string.model_selection)
+    object ARScreen : NavDestination("ar_screen")
+
+    object ModelSelection : NavDestination("model_selection")
 }

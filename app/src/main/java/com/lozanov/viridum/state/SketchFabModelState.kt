@@ -1,5 +1,5 @@
 package com.lozanov.viridum.state
 
-sealed class SketchFabModelState(
+sealed class SketchFabModelState : NetworkState {
 
-)
+}

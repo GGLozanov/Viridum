@@ -1,5 +1,5 @@
 package com.lozanov.viridum.state
 
-sealed class ARState {
+sealed class ARState : NetworkState {
 
 }

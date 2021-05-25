@@ -4,35 +4,77 @@ import android.os.Parcelable
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.OnBackPressedDispatcher
 import androidx.compose.runtime.toMutableStateList
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import java.lang.IllegalStateException
 
-// initial impl provided by Skydoves
-class Navigator<T : Parcelable> private constructor(
-    initialBackStack: List<T>,
-    onBackPressedDispatch: OnBackPressedDispatcher
+class Navigator(
+    private val destinationsExitOnPop: List<NavDestination>? = null
 ) {
-    constructor(initialDestination: T,
-                onBackPressedDispatch: OnBackPressedDispatcher)
-        : this(listOf(initialDestination), onBackPressedDispatch)
+    private var currentlyNav: Boolean? = null
+    private val _latestNavigateDestination =
+        MutableStateFlow<NavDestination>(NavDestination.Root)
 
-    private val backStack = initialBackStack.toMutableStateList()
-    private val backCallback = object : OnBackPressedCallback(canGoBack()) {
-        override fun handleOnBackPressed() {
-            back()
+    val latestNavigationState: Flow<LatestNavigationState>
+        get() =
+        _latestNavigateDestination.map {
+            when {
+                it == NavDestination.Root
+                        && _latestNavigateDestination.replayCache.size <= 1 -> { // second condition guards against initial popping (may not work?)
+                    LatestNavigationState.Exit
+                }
+                currentlyNav == true -> {
+                    LatestNavigationState.Navigate(it)
+                }
+                currentlyNav == false -> {
+                    LatestNavigationState.Pop(it)
+                }
+                else -> {
+                    LatestNavigationState.Idle
+                }
+            }
         }
-    }.also { callback ->
-        onBackPressedDispatch.addCallback(callback)
-    }
-    val current: T get() = backStack.last()
 
-    fun back() {
-        backStack.removeAt(backStack.lastIndex)
-        backCallback.isEnabled = canGoBack()
+    fun navigate(dest: NavDestination) {
+        currentlyNav = true
+        _latestNavigateDestination.value = dest
     }
 
-    fun navigate(destination: T) {
-        backStack += destination
-        backCallback.isEnabled = canGoBack()
+    fun pop(until: NavDestination? = null) {
+        currentlyNav = false
+
+        if(!_latestNavigateDestination.replayCache.contains(until)) {
+            throw IllegalStateException("Cannot pop destination not contained in navDestination replay cache " +
+                    "(i.e. previous destinations)!")
+        }
+
+        val backstackPopUntil = _latestNavigateDestination.replayCache
+                .subList(_latestNavigateDestination.replayCache
+                    .indexOf(until), _latestNavigateDestination.replayCache.lastIndex)
+
+        if(destinationsExitOnPop?.any { backstackPopUntil.contains(it) } == true) { // pop destination met on backstack
+            _latestNavigateDestination.value = NavDestination.Root
+            return
+        }
+
+        if(until == null) {
+            _latestNavigateDestination.value =
+                _latestNavigateDestination.replayCache[
+                        _latestNavigateDestination.replayCache.lastIndex - 1]
+        } else {
+            _latestNavigateDestination.value = until
+        }
     }
 
-    private fun canGoBack(): Boolean = backStack.size > 1
+    sealed class LatestNavigationState {
+        data class Navigate(val dest: NavDestination) : LatestNavigationState()
+
+        data class Pop(val until: NavDestination? = null) : LatestNavigationState()
+
+        object Exit : LatestNavigationState()
+
+        object Idle : LatestNavigationState()
+    }
 }
