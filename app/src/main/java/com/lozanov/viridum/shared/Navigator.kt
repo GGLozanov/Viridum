@@ -4,6 +4,7 @@ import android.os.Parcelable
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.OnBackPressedDispatcher
 import androidx.compose.runtime.toMutableStateList
+import androidx.navigation.NavBackStackEntry
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,9 +38,20 @@ class Navigator(
             }
         }
 
-    fun navigate(dest: NavDestination) {
-        currentlyNav = true
-        _latestNavigateDestination.value = dest
+    fun navigate(dest: NavDestination,
+                 backStackEntry: NavBackStackEntry? = null) {
+        val performNavigation = {
+            currentlyNav = true
+            _latestNavigateDestination.value = dest
+        }
+
+        if(backStackEntry != null) {
+            if(backStackEntry.lifecycleIsResumed())  {
+                performNavigation()
+            }
+        } else {
+            performNavigation()
+        }
     }
 
     fun pop(until: NavDestination? = null) {
