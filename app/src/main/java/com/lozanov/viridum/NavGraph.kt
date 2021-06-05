@@ -18,6 +18,9 @@ import com.lozanov.viridum.persistence.readOnboardingValid
 import com.lozanov.viridum.persistence.writeOnboardingValid
 import com.lozanov.viridum.shared.NavDestination
 import com.lozanov.viridum.shared.Navigator
+import com.lozanov.viridum.ui.auth.Login
+import com.lozanov.viridum.ui.main.ARScreen
+import com.lozanov.viridum.ui.main.ModelSelectionScreen
 import com.lozanov.viridum.ui.onboarding.Onboarding
 import com.lozanov.viridum.ui.splash.Splash
 import kotlinx.coroutines.flow.collectLatest
@@ -71,10 +74,6 @@ fun NavGraph(
             }
         }
         composable(NavDestination.Onboarding.route) {
-            BackHandler {
-                exit()
-            }
-
             Onboarding(
                 onboardingComplete = {
                     coroutineScope.launch {
@@ -85,15 +84,20 @@ fun NavGraph(
                 }
             )
         }
+        // TODO: Encapsulate in separate nested graph
         composable(NavDestination.Login.route) {
+            BackHandler {
+                exit()
+            }
 
+            Login()
         }
-        // TODO: Tab navigation between these two that hides while user is not auth'd? Somehow...?
+        // TODO: Encapsulate in separate nested graph
         composable(NavDestination.ModelSelection.route) {
-
+            ModelSelectionScreen()
         }
         composable(NavDestination.ARScreen.route) {
-
+            ARScreen()
         }
     }
 }

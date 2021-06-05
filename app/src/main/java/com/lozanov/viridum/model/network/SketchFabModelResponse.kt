@@ -1,6 +1,18 @@
 package com.lozanov.viridum.model.network
 
-// TODO: Convert to data class and fill
-class SketchFabModelResponse(
+data class SketchFabModelResponse(
+    val gltf: Gltf, // archive
+    val usdz: Usdz // file
+)
 
-) : Response()
+data class Gltf(
+    val expires: Int,
+    val size: Int,
+    val url: String
+)
+
+data class Usdz(
+    val expires: Int,
+    val size: Int,
+    val url: String
+)

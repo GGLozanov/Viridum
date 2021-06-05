@@ -5,4 +5,9 @@
     <string name="ar_screen">ar_screen</string>
     <string name="model_selection">model_selection</string>
     <string name="logo">Logo</string>
+    <string name="back">Back</string>
+    <string name="view_model">View 3D Model</string>
+    <string name="login_title">Login</string>
+    <string name="splash">splash</string>
+    <string name="model_selection_title">Select 3D Model</string>
 </resources>

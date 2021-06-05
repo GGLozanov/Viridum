@@ -22,7 +22,15 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "CLIENT_ID", "projectViridumSketchfabClientID")
+            buildConfigField("String", "CLIENT_SECRET", "projectViridumSketchfabClientSecret")
+        }
+
         release {
+            buildConfigField("String", "CLIENT_ID", "projectViridumSketchfabClientID")
+            buildConfigField("String", "CLIENT_SECRET", "projectViridumSketchfabClientSecret")
+
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
@@ -77,10 +85,19 @@ dependencies {
     implementation("androidx.hilt:hilt-navigation-fragment:1.0.0")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.0")
     implementation("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2")
+    implementation("net.openid:appauth:0.8.1")
 
     testImplementation("junit:junit:4.+")
     androidTestImplementation("androidx.test.ext:junit:1.1.2")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.3.0")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:${rootProject.extra["compose_version"]}")
+}
+
+fun com.android.build.gradle.internal.dsl.BaseFlavor.buildConfigFieldFromGradleProperty(name: String, gradlePropertyName: String) {
+    val propertyValue = project.properties[gradlePropertyName] as? String
+    checkNotNull(propertyValue) { "Gradle property $gradlePropertyName is null" }
+
+    buildConfigField("String", name, propertyValue)
 }
