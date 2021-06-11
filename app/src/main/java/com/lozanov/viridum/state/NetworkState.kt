@@ -2,10 +2,10 @@ package com.lozanov.viridum.state
 
 import com.lozanov.viridum.model.Model
 
-sealed interface NetworkState {
-    data class Error(val error: Exception) : NetworkState
+sealed class NetworkState : ARState, SketchFabModelState, SketchFabOAuthState {
+    data class Error(val error: Exception) : NetworkState()
 
-    object Loading : NetworkState
+    object Loading : NetworkState()
 
-    data class Result<T : Model>(val result: T) : NetworkState
+    data class Result<T : Model>(val result: T) : NetworkState()
 }

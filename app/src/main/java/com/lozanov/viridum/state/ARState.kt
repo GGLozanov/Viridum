@@ -1,5 +1,4 @@
 package com.lozanov.viridum.state
 
-sealed class ARState {
-
+sealed interface ARState {
 }

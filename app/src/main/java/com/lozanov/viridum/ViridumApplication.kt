@@ -17,10 +17,15 @@ import com.lozanov.viridum.ui.theme.ViridumTheme
 import com.google.accompanist.insets.ProvideWindowInsets
 import com.google.accompanist.insets.navigationBarsHeight
 import com.google.accompanist.insets.statusBarsPadding
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.pagerTabIndicatorOffset
+import com.google.accompanist.pager.rememberPagerState
 import com.lozanov.viridum.shared.NavDestination
 import com.lozanov.viridum.shared.NavDestination.Companion.findDestinationByRoute
 import com.lozanov.viridum.shared.Navigator
 
+@ExperimentalPagerApi
 @Composable
 fun ViridumApplication(navigator: Navigator, exit: () -> Unit) {
     val navController = rememberNavController()
@@ -52,15 +57,27 @@ private fun AppBar(currentDestination: NavDestination) {
         elevation = 0.dp,
         modifier = Modifier.statusBarsPadding(),
         navigationIcon = {
-            if(currentDestination.tabDestination) {
+            if(currentDestination.hasBackArrow) {
                 Icon(painter =
                     painterResource(R.drawable.ic_baseline_arrow_back_24),
                         contentDescription = stringResource(R.string.back))
+            }
+        },
+        actions = {
+            if(currentDestination.hasLogoutAction) {
+                IconButton(onClick = {
+                    // TODO: Send logout event (ViewModel?? Listener somewhere?)
+                }) {
+                    Icon(painter =
+                        painterResource(id = R.drawable.ic_baseline_exit_to_app_24),
+                    contentDescription = stringResource(R.string.logout))
+                }
             }
         }
     )
 }
 
+@ExperimentalPagerApi
 @Composable
 private fun TabbedNav(navigator: Navigator, navController: NavController, routes: List<MainTabs>) {
     val navBackStackEntry = navController.currentBackStackEntryAsState()
@@ -69,8 +86,15 @@ private fun TabbedNav(navigator: Navigator, navController: NavController, routes
     val currentDestination = routes.find { it.destination.route == currentRoute }
 
     if (currentDestination != null) {
-        TabRow(selectedTabIndex = currentDestination.ordinal, modifier =
-            Modifier.navigationBarsHeight(additional = 56.dp)) {
+        val pagerState = rememberPagerState(pageCount = routes.size,
+            initialPage = currentDestination.ordinal)
+
+        TabRow(selectedTabIndex = pagerState.currentPage, modifier =
+                Modifier.navigationBarsHeight(additional = 56.dp), indicator = { tabPositions ->
+            TabRowDefaults.Indicator(
+                Modifier.pagerTabIndicatorOffset(pagerState, tabPositions)
+            )
+        }) {
             routes.forEach {
                 val tabCurrentlySelected = it.ordinal == currentDestination.ordinal
 
@@ -87,6 +111,8 @@ private fun TabbedNav(navigator: Navigator, navController: NavController, routes
                     painter = painterResource(it.icon), contentDescription = null) },
                         selected = tabCurrentlySelected)
             }
+
+            // TODO: Horizontal Pager declaration somewhere here (or in the nested navigation graph?)
         }
     }
 }

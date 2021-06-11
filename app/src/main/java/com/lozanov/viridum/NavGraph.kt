@@ -3,31 +3,27 @@ package com.lozanov.viridum
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.Lifecycle
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navigation
-import com.lozanov.viridum.persistence.dataStore
-import com.lozanov.viridum.persistence.readOnboardingValid
-import com.lozanov.viridum.persistence.writeOnboardingValid
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.lozanov.viridum.persistence.*
 import com.lozanov.viridum.shared.NavDestination
 import com.lozanov.viridum.shared.Navigator
 import com.lozanov.viridum.ui.auth.Login
 import com.lozanov.viridum.ui.main.ARScreen
-import com.lozanov.viridum.ui.main.ModelSelectionScreen
+import com.lozanov.viridum.ui.main.ModelSelection
+import com.lozanov.viridum.ui.main.main
 import com.lozanov.viridum.ui.onboarding.Onboarding
 import com.lozanov.viridum.ui.splash.Splash
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
+@ExperimentalPagerApi
 @Composable
 fun NavGraph(
     navigator: Navigator,
@@ -59,6 +55,7 @@ fun NavGraph(
     }
 
     val shouldOnboard = context.readOnboardingValid().collectAsState(initial = true)
+    val isAuthenticated = context.readAuthToken().map { it == null }.collectAsState(initial = true)
 
     NavHost(navController = navController,
         startDestination = NavDestination.Splash.route) {
@@ -69,8 +66,10 @@ fun NavGraph(
 
             Splash {
                 // TODO: Add check for auth state in sharedprefs later on & immediately auth
+                navigator.pop()
                 navigator.navigate(if(shouldOnboard.value)
-                    NavDestination.Onboarding else NavDestination.Login)
+                    NavDestination.Onboarding else if(isAuthenticated.value) NavDestination.ModelSelection
+                        else NavDestination.Login)
             }
         }
         composable(NavDestination.Onboarding.route) {
@@ -79,8 +78,7 @@ fun NavGraph(
                     coroutineScope.launch {
                         context.writeOnboardingValid(false)
                     }
-                    // TODO: Same check for auth state
-                    navigator.navigate(NavDestination.Login)
+                    navigator.pop()
                 }
             )
         }
@@ -90,14 +88,18 @@ fun NavGraph(
                 exit()
             }
 
-            Login()
+            if (!shouldOnboard.value) {
+                Login(onSuccessfulAuth = { token ->
+                    coroutineScope.launch {
+                        context.writeAuthToken(token)
+                    }
+                    navigator.pop()
+                })
+            }
         }
         // TODO: Encapsulate in separate nested graph
-        composable(NavDestination.ModelSelection.route) {
-            ModelSelectionScreen()
-        }
-        composable(NavDestination.ARScreen.route) {
-            ARScreen()
+        main() {
+
         }
     }
 }

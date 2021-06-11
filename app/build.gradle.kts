@@ -77,6 +77,7 @@ dependencies {
     implementation("com.google.accompanist:accompanist-flowlayout:0.10.0")
     implementation("com.google.accompanist:accompanist-coil:0.10.0")
     implementation("com.google.accompanist:accompanist-pager:0.10.0")
+    implementation("com.google.accompanist:accompanist-pager-indicators:0.10.0")
     implementation("com.google.accompanist:accompanist-insets:0.10.0")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0-alpha02")
     implementation("com.google.ar:core:1.24.0")

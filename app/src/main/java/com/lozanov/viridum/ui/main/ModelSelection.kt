@@ -5,8 +5,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.lozanov.viridum.viewmodel.ModelSelectionViewModel
 
 @Composable
-fun ModelSelectionScreen(
+fun ModelSelection(
     viewModel: ModelSelectionViewModel = hiltViewModel()
 ) {
-
+    // TODO: Show option for sketchfab select & navigation to file select
 }

@@ -5,13 +5,14 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 object DataStorePrefKeys {
     const val ONBOARDING_VALID = "onboarding_valid"
-    const val AUTH_VALID = "auth_valid"
+    const val AUTH_TOKEN = "auth_token"
 }
 
 fun Context.readOnboardingValid(): Flow<Boolean> {
@@ -22,11 +23,11 @@ fun Context.readOnboardingValid(): Flow<Boolean> {
         }
 }
 
-fun Context.readAuthValid(): Flow<Boolean> {
-    val authKey = booleanPreferencesKey(DataStorePrefKeys.AUTH_VALID)
+fun Context.readAuthToken(): Flow<String?> {
+    val authKey = stringPreferencesKey(DataStorePrefKeys.AUTH_TOKEN)
     return dataStore.data
         .map { preferences ->
-            preferences[authKey] ?: false
+            preferences[authKey]
         }
 }
 
@@ -38,11 +39,10 @@ suspend fun Context.writeOnboardingValid(valid: Boolean? = null) {
     }
 }
 
-suspend fun Context.writeAuthValid(valid: Boolean? = null) {
-    val authKey = booleanPreferencesKey(DataStorePrefKeys.AUTH_VALID)
+suspend fun Context.writeAuthToken(token: String) {
+    val authKey = stringPreferencesKey(DataStorePrefKeys.AUTH_TOKEN)
     dataStore.edit { settings ->
-        val currentValidity = settings[authKey] ?: false
-        settings[authKey] = valid ?: !currentValidity
+        settings[authKey] = token
     }
 }
 

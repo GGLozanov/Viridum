@@ -10,4 +10,13 @@
     <string name="login_title">Login</string>
     <string name="splash">splash</string>
     <string name="model_selection_title">Select 3D Model</string>
+    <string name="welcome_viridum">Welcome to Viridum!</string>
+    <string name="finish">Finish</string>
+    <string name="text_continue">Continue</string>
+    <string name="onboarding_subtitle_1">The 3D model viewer app!</string>
+    <string name="how_to_3d">How to Browse Models</string>
+    <string name="onboarding_subtitle_2">Simply log into your SketchFab account and pick a model from the ones you have! If you don\'t have an account, just pick from your own storage and we\'ll do the work.</string>
+    <string name="camera_rationale">We need to access your camera in order to use AR functionality.</string>
+    <string name="logout">Logout</string>
+    <string name="three_dimensional">3D</string>
 </resources>
