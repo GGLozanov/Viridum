@@ -1,9 +1,8 @@
 package com.lozanov.viridum
 
+import android.content.Context
 import androidx.activity.compose.BackHandler
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -13,15 +12,17 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.lozanov.viridum.persistence.*
 import com.lozanov.viridum.shared.NavDestination
 import com.lozanov.viridum.shared.Navigator
+import com.lozanov.viridum.shared.isARCoreSupportedAndUpToDate
+import com.lozanov.viridum.state.ARAvailabilityState
 import com.lozanov.viridum.ui.auth.Login
 import com.lozanov.viridum.ui.main.ARScreen
 import com.lozanov.viridum.ui.main.ModelSelection
 import com.lozanov.viridum.ui.main.main
 import com.lozanov.viridum.ui.onboarding.Onboarding
 import com.lozanov.viridum.ui.splash.Splash
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 
 @ExperimentalPagerApi
 @Composable
@@ -56,6 +57,7 @@ fun NavGraph(
 
     val shouldOnboard = context.readOnboardingValid().collectAsState(initial = true)
     val isAuthenticated = context.readAuthToken().map { it == null }.collectAsState(initial = true)
+    val askedForARAvailability = remember { mutableStateOf(false) }
 
     NavHost(navController = navController,
         startDestination = NavDestination.Splash.route) {
@@ -98,7 +100,7 @@ fun NavGraph(
             }
         }
         // TODO: Encapsulate in separate nested graph
-        main() {
+        main {
 
         }
     }

@@ -5,11 +5,13 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -38,7 +40,8 @@ fun ViridumApplication(navigator: Navigator, exit: () -> Unit) {
                 )) },
             ) {
                 Column {
-                    TabbedNav(navigator = navigator, navController = navController,
+                    TabbedNav(navigator = navigator, navBackStackEntry =
+                        navController.currentBackStackEntryAsState(),
                         routes = listOf(MainTabs.MODEL_SELECT, MainTabs.AR_SCREEN))
                     NavGraph(navigator, navController, exit = exit)
                 }
@@ -79,8 +82,7 @@ private fun AppBar(currentDestination: NavDestination) {
 
 @ExperimentalPagerApi
 @Composable
-private fun TabbedNav(navigator: Navigator, navController: NavController, routes: List<MainTabs>) {
-    val navBackStackEntry = navController.currentBackStackEntryAsState()
+private fun TabbedNav(navigator: Navigator, navBackStackEntry: State<NavBackStackEntry?>, routes: List<MainTabs>) {
     val currentRoute = navBackStackEntry.value?.destination?.route
         ?: MainTabs.MODEL_SELECT.destination.route
     val currentDestination = routes.find { it.destination.route == currentRoute }

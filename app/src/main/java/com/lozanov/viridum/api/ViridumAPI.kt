@@ -32,6 +32,8 @@ interface ViridumAPI {
                     val headers = it.request().headers
                         .newBuilder()
                         .add("Accept", "*/*")
+                        .add("Content-Type", if(it.request().method == "POST")
+                            "application/x-www-form-urlencoded" else "application/json")
                         .add("Connection", "keep-alive")
                         .build()
 
