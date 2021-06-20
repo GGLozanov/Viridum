@@ -8,6 +8,7 @@ import java.lang.IllegalArgumentException
 
 sealed class NavDestination(val route: String = "",
                             @StringRes val titleId: Int? = null,
+                            @StringRes val tabTitleId: Int? = null,
                             val arguments: List<NamedNavArgument> = emptyList(),
                             val hasBackArrow: Boolean = false,
                             val hasLogoutAction: Boolean = false) {
@@ -19,9 +20,13 @@ sealed class NavDestination(val route: String = "",
 
     object Login : NavDestination("login", R.string.login_title)
 
-    object ARScreen : NavDestination("ar_screen", R.string.view_model, hasLogoutAction = true)
+    object MainDestination : NavDestination("main") {
+        object ARScreen : NavDestination("ar_screen", titleId = R.string.app_name,
+            tabTitleId = R.string.view_model, hasLogoutAction = true)
 
-    object ModelSelection : NavDestination("model_selection", R.string.model_selection_title, hasLogoutAction = true)
+        object ModelSelection : NavDestination("model_selection", R.string.app_name,
+            tabTitleId = R.string.model_selection_title, hasLogoutAction = true)
+    }
 
     companion object {
         //  not actually a composable, just need the scoping provided
@@ -31,8 +36,9 @@ sealed class NavDestination(val route: String = "",
                 Root.route -> Root
                 Login.route -> Login
                 Onboarding.route -> Onboarding
-                ARScreen.route -> ARScreen
-                ModelSelection.route -> ModelSelection
+                MainDestination.route -> MainDestination
+                MainDestination.ARScreen.route -> MainDestination.ARScreen
+                MainDestination.ModelSelection.route -> MainDestination.ModelSelection
                 else -> throw IllegalArgumentException("Invalid route for findDestinationByRoute call!")
             }
     }

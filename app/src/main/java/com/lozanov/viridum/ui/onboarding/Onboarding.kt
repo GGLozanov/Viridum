@@ -2,10 +2,8 @@ package com.lozanov.viridum.ui.onboarding
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
@@ -53,7 +51,7 @@ fun OnboardingSegment(
 ) {
     val coroutineScope = rememberCoroutineScope()
 
-    Column(modifier = Modifier
+    Box(modifier = Modifier
             .fillMaxSize()) {
         Text(text = stringResource(pageData.headerId),
             textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
@@ -69,7 +67,7 @@ fun OnboardingSegment(
                     pagerState.animateScrollToPage(pagerState.currentPage + 1)
                 }
             }
-        }) {
+        }, modifier = Modifier.align(Alignment.BottomEnd)) {
             Text(text = stringResource(if(pageData.lastSegment)
                 com.lozanov.viridum.R.string.finish else
                     com.lozanov.viridum.R.string.text_continue))

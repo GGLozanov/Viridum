@@ -1,22 +1,20 @@
 package com.lozanov.viridum
 
-import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navigation
 import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.PagerState
 import com.lozanov.viridum.persistence.*
 import com.lozanov.viridum.shared.NavDestination
 import com.lozanov.viridum.shared.Navigator
-import com.lozanov.viridum.shared.isARCoreSupportedAndUpToDate
-import com.lozanov.viridum.state.ARAvailabilityState
 import com.lozanov.viridum.ui.auth.Login
-import com.lozanov.viridum.ui.main.ARScreen
-import com.lozanov.viridum.ui.main.ModelSelection
 import com.lozanov.viridum.ui.main.main
 import com.lozanov.viridum.ui.onboarding.Onboarding
 import com.lozanov.viridum.ui.splash.Splash
@@ -57,7 +55,7 @@ fun NavGraph(
 
     val shouldOnboard = context.readOnboardingValid().collectAsState(initial = true)
     val isAuthenticated = context.readAuthToken().map { it == null }.collectAsState(initial = true)
-    val askedForARAvailability = remember { mutableStateOf(false) }
+    val askedForARCoreAvailability = rememberSaveable { mutableStateOf(false) }
 
     NavHost(navController = navController,
         startDestination = NavDestination.Splash.route) {
@@ -67,11 +65,14 @@ fun NavGraph(
             }
 
             Splash {
-                // TODO: Add check for auth state in sharedprefs later on & immediately auth
                 navigator.pop()
-                navigator.navigate(if(shouldOnboard.value)
-                    NavDestination.Onboarding else if(isAuthenticated.value) NavDestination.ModelSelection
-                        else NavDestination.Login)
+                navigator.navigate(
+                    when {
+                        shouldOnboard.value -> NavDestination.Onboarding
+                        isAuthenticated.value -> NavDestination.MainDestination
+                        else -> NavDestination.Login
+                    }
+                )
             }
         }
         composable(NavDestination.Onboarding.route) {
@@ -84,24 +85,33 @@ fun NavGraph(
                 }
             )
         }
-        // TODO: Encapsulate in separate nested graph
         composable(NavDestination.Login.route) {
             BackHandler {
                 exit()
             }
 
             if (!shouldOnboard.value) {
-                Login(onSuccessfulAuth = { token ->
-                    coroutineScope.launch {
-                        context.writeAuthToken(token)
+                Login(askedForARCoreAvailability = askedForARCoreAvailability,
+                    onSuccessfulAuth = { token ->
+                    if(token != null) {
+                        coroutineScope.launch {
+                            context.writeAuthToken(token)
+                        }
                     }
                     navigator.pop()
+                    navigator.navigate(NavDestination.MainDestination)
                 })
             }
         }
-        // TODO: Encapsulate in separate nested graph
-        main {
+        navigation(
+            route = NavDestination.MainDestination.route,
+            startDestination = NavDestination.MainDestination.ModelSelection.route
+        ) {
+            main(
+                askedForARCoreAvailability = askedForARCoreAvailability,
+            ) {
 
+            }
         }
     }
 }

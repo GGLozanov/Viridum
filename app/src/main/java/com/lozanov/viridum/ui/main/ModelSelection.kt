@@ -17,6 +17,5 @@ fun ModelSelection(
     ARCoreInstallationWrapper(askedForARCoreAvailability) {
 
     }
-
     // TODO: Show option for sketchfab select & navigation to file select
 }

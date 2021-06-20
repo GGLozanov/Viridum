@@ -54,6 +54,7 @@ android {
 
 dependencies {
     val room_version = "2.3.0"
+    val accompanist_version = "0.12.0"
 
     implementation("androidx.room:room-runtime:$room_version")
     annotationProcessor("androidx.room:room-compiler:$room_version")
@@ -71,14 +72,14 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core:${rootProject.extra["compose_version"]}")
     implementation("androidx.compose.material:material-icons-extended:${rootProject.extra["compose_version"]}")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
-    implementation("androidx.activity:activity-compose:1.3.0-alpha08")
+    implementation("androidx.activity:activity-compose:1.3.0-beta01")
     implementation("androidx.compose.runtime:runtime-livedata:${rootProject.extra["compose_version"]}")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha05")
-    implementation("com.google.accompanist:accompanist-flowlayout:0.10.0")
-    implementation("com.google.accompanist:accompanist-coil:0.10.0")
-    implementation("com.google.accompanist:accompanist-pager:0.10.0")
-    implementation("com.google.accompanist:accompanist-pager-indicators:0.10.0")
-    implementation("com.google.accompanist:accompanist-insets:0.10.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha06")
+    implementation("com.google.accompanist:accompanist-flowlayout:$accompanist_version")
+    implementation("com.google.accompanist:accompanist-coil:$accompanist_version")
+    implementation("com.google.accompanist:accompanist-pager:$accompanist_version")
+    implementation("com.google.accompanist:accompanist-pager-indicators:$accompanist_version")
+    implementation("com.google.accompanist:accompanist-insets:$accompanist_version")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0-alpha02")
     implementation("com.google.ar:core:1.24.0")
     implementation("androidx.datastore:datastore-preferences:1.0.0-beta01")

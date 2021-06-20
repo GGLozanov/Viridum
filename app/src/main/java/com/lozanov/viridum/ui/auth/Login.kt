@@ -1,8 +1,5 @@
 package com.lozanov.viridum.ui.auth
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.IconButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -15,10 +12,11 @@ import android.view.ViewGroup
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.Text
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.platform.LocalContext
@@ -27,15 +25,19 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.lozanov.viridum.shared.ARCoreInstallationWrapper
 import com.lozanov.viridum.shared.determineARAvailability
+import kotlinx.coroutines.launch
 
 
 @Composable
 fun Login(
-    onSuccessfulAuth: (token: String) -> Unit,
-    askedForARCoreAvailability: State<Boolean>
+    askedForARCoreAvailability: State<Boolean>,
+    onSuccessfulAuth: (token: String?) -> Unit,
 ) {
-    ARCoreInstallationWrapper(askedForARCoreAvailability) {
-        val webViewVisible = remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    ARCoreInstallationWrapper(askedForARCoreAvailability, snackbarHostState) {
+        val webViewVisible = rememberSaveable { mutableStateOf(false) }
+        val coroutineScope = rememberCoroutineScope()
 
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -49,6 +51,16 @@ fun Login(
                 // TODO: SketchFab Logo
                 // Icon(painter = painterResource())
             }
+            Spacer(modifier = Modifier.height(20.dp))
+            Divider()
+            Text(text = "Or continue without logging in",
+                modifier = Modifier.clickable {
+                onSuccessfulAuth(null)
+            })
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
         }
 
         if(webViewVisible.value) {
@@ -57,13 +69,16 @@ fun Login(
                         "?state=123456789&response_type=token&client_id=" +
                         "${com.lozanov.viridum.BuildConfig.CLIENT_ID}",
                 onSuccessfulTokenRetrieval = { url ->
-                    // TODO: Process token
                     Log.i("Login", "${url}")
 
                     // onSuccessfulAuth(token)
                     webViewVisible.value = false
                 }) {
-                // TODO: Show error
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = "Something went wrong with the login! Please, try again!"
+                    )
+                }
                 webViewVisible.value = false
             }
         }
@@ -73,7 +88,7 @@ fun Login(
 @Composable
 fun SketchFabOAuthWebView(
     sketchFabUrl: String,
-    onSuccessfulTokenRetrieval: (url: String) -> Unit,
+    onSuccessfulTokenRetrieval: (url: String?) -> Unit,
     onFailedTokenRetrieval: () -> Unit
 ) {
     return AndroidView(factory = { context ->

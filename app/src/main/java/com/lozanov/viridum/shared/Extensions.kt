@@ -10,6 +10,7 @@ import android.os.Build
 import android.util.Log
 import android.view.KeyCharacterMap
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.rememberCoroutineScope
@@ -149,11 +150,13 @@ fun Context.determineARAvailability(
 @Composable
 fun ARCoreInstallationWrapper(
     askedForARCoreAvailability: State<Boolean>,
+    errorSnackbarHostState: SnackbarHostState,
     onInstalled: @Composable () -> Unit
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
+    // TODO: Pass snackbar state and whatever else is needed down
     if(!context.determineARAvailability(
             askedForARCoreAvailability, coroutineScope)) {
         return
