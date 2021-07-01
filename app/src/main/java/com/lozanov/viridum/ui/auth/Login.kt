@@ -33,35 +33,24 @@ fun Login(
     askedForARCoreAvailability: State<Boolean>,
     onSuccessfulAuth: (token: String?) -> Unit,
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    ARCoreInstallationWrapper(askedForARCoreAvailability, snackbarHostState) {
+    ARCoreInstallationWrapper(askedForARCoreAvailability) {
         val webViewVisible = rememberSaveable { mutableStateOf(false) }
         val coroutineScope = rememberCoroutineScope()
 
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
-        ) {
-            OutlinedButton(onClick = {
-                webViewVisible.value = true
-            }, border = BorderStroke(1.dp, Red),
-                modifier = Modifier.padding(8.dp)) {
-                Text(text = "Log in with SketchFab")
-                // TODO: SketchFab Logo
-                // Icon(painter = painterResource())
-            }
-            Spacer(modifier = Modifier.height(20.dp))
-            Divider()
-            Text(text = "Or continue without logging in",
-                modifier = Modifier.clickable {
-                onSuccessfulAuth(null)
-            })
-            SnackbarHost(
-                hostState = snackbarHostState,
-                modifier = Modifier.align(Alignment.BottomCenter)
-            )
+        OutlinedButton(onClick = {
+            webViewVisible.value = true
+        }, border = BorderStroke(1.dp, Red),
+            modifier = Modifier.padding(8.dp)) {
+            Text(text = "Log in with SketchFab")
+            // TODO: SketchFab Logo
+            // Icon(painter = painterResource())
         }
+        Spacer(modifier = Modifier.height(20.dp))
+        Divider()
+        Text(text = "Or continue without logging in",
+            modifier = Modifier.clickable {
+            onSuccessfulAuth(null)
+        })
 
         if(webViewVisible.value) {
             SketchFabOAuthWebView(

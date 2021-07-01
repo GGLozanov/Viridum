@@ -7,18 +7,28 @@ import com.google.ar.core.ArCoreApk
 import com.lozanov.viridum.viewmodel.ARViewModel
 import android.os.Handler
 import android.os.Looper
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.Text
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import com.lozanov.viridum.R
 
 @Composable
 fun ARScreen(
     viewModel: ARViewModel = hiltViewModel()
 ) {
     // TODO: Camera request permissions as per https://stackoverflow.com/a/67120456/13417704
+    Box(modifier = Modifier.fillMaxSize()) {
+        Text(text = stringResource(R.string.ar_screen),
+            modifier = Modifier.align(Alignment.Center))
+    }
 }
 
 //@Composable

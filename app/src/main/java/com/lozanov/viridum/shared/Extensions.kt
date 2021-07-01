@@ -10,14 +10,21 @@ import android.os.Build
 import android.util.Log
 import android.view.KeyCharacterMap
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.SnackbarHost
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavBackStackEntry
 import com.google.ar.core.ArCoreApk
+import com.lozanov.viridum.R
 import com.lozanov.viridum.state.ARAvailabilityState
 import kotlinx.coroutines.*
 import pub.devrel.easypermissions.EasyPermissions
@@ -118,6 +125,7 @@ fun Context.isARCoreSupportedAndUpToDate(): ARAvailabilityState {
 
 fun Context.determineARAvailability(
     asked: State<Boolean>,
+    errorSnackBarHostState: SnackbarHostState,
     coroutineScope: CoroutineScope,
 ): Boolean {
     if(!asked.value) {
@@ -129,14 +137,18 @@ fun Context.determineARAvailability(
                 // TODO: AlertDialog and suspend app
             }
             is ARAvailabilityState.ErrorOrTimedOut -> {
-                // TODO: Snackbar
+                coroutineScope.launch {
+                    errorSnackBarHostState.showSnackbar(
+                        message = resources.getString(R.string.error_ar)
+                    )
+                }
             }
             is ARAvailabilityState.Checking -> {
                 coroutineScope.launch {
                     withContext(Dispatchers.IO) {
                         delay(200)
                     }
-                    determineARAvailability(asked,
+                    determineARAvailability(asked, errorSnackBarHostState,
                         coroutineScope)
                 }
             }
@@ -147,22 +159,40 @@ fun Context.determineARAvailability(
     return true
 }
 
+interface ARCoreInstallationWrapperScope {
+    val snackbarHostState: SnackbarHostState
+}
+
 @Composable
 fun ARCoreInstallationWrapper(
     askedForARCoreAvailability: State<Boolean>,
-    errorSnackbarHostState: SnackbarHostState,
-    onInstalled: @Composable () -> Unit
+    mainContentAlignment: Alignment = Alignment.Center,
+    onInstalled: @Composable ARCoreInstallationWrapperScope.() -> Unit
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val wrapperScope = remember { object : ARCoreInstallationWrapperScope {
+        override val snackbarHostState: SnackbarHostState
+            get() = snackbarHostState
+    } }
 
     // TODO: Pass snackbar state and whatever else is needed down
     if(!context.determineARAvailability(
-            askedForARCoreAvailability, coroutineScope)) {
+            askedForARCoreAvailability, snackbarHostState, coroutineScope)) {
         return
     }
 
-    onInstalled()
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = mainContentAlignment
+    ) {
+        onInstalled(p1 = wrapperScope)
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
+    }
 }
 
 fun Context.getActivity(): AppCompatActivity? {

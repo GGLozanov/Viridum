@@ -2,13 +2,11 @@ package com.lozanov.viridum
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -32,7 +30,9 @@ import com.lozanov.viridum.ui.main.ARScreen
 import com.lozanov.viridum.ui.main.ModelSelection
 import com.lozanov.viridum.ui.onboarding.OnboardingSegment
 import com.lozanov.viridum.ui.onboarding.PageData
+import kotlinx.coroutines.launch
 
+@ExperimentalAnimationApi
 @ExperimentalPagerApi
 @Composable
 fun ViridumApplication(navigator: Navigator, exit: () -> Unit) {
@@ -61,6 +61,7 @@ fun ViridumApplication(navigator: Navigator, exit: () -> Unit) {
 @Composable
 private fun AppBar(navigator: Navigator, currentDestination: NavDestination) {
     val title = currentDestination.titleId ?: return
+    val coroutineScope = rememberCoroutineScope()
 
     TopAppBar(title = {
         Text(text = stringResource(title))
@@ -70,7 +71,9 @@ private fun AppBar(navigator: Navigator, currentDestination: NavDestination) {
         navigationIcon = {
             if(currentDestination.hasBackArrow) {
                 IconButton(onClick = {
-                    navigator.pop()
+                    coroutineScope.launch {
+                        navigator.pop()
+                    }
                 }) {
                     Icon(painter =
                         painterResource(R.drawable.ic_baseline_arrow_back_24),

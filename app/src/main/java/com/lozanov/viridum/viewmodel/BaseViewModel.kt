@@ -7,8 +7,7 @@ import com.lozanov.viridum.shared.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
-@HiltViewModel
-abstract class BaseViewModel @Inject constructor(
+abstract class BaseViewModel(
     protected val savedStateHandle: SavedStateHandle,
     val navigator: Navigator,
     application: Application

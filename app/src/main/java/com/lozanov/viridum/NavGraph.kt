@@ -1,6 +1,7 @@
 package com.lozanov.viridum
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
@@ -12,6 +13,8 @@ import androidx.navigation.navigation
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.PagerState
 import com.lozanov.viridum.persistence.*
+import com.lozanov.viridum.shared.NavAnimationFade
+import com.lozanov.viridum.shared.NavAnimationSlide
 import com.lozanov.viridum.shared.NavDestination
 import com.lozanov.viridum.shared.Navigator
 import com.lozanov.viridum.ui.auth.Login
@@ -22,6 +25,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
+@ExperimentalAnimationApi
 @ExperimentalPagerApi
 @Composable
 fun NavGraph(
@@ -65,7 +69,10 @@ fun NavGraph(
             }
 
             Splash {
-                navigator.pop()
+                coroutineScope.launch {
+                    navigator.pop()
+                }
+
                 navigator.navigate(
                     when {
                         shouldOnboard.value -> NavDestination.Onboarding
@@ -80,8 +87,8 @@ fun NavGraph(
                 onboardingComplete = {
                     coroutineScope.launch {
                         context.writeOnboardingValid(false)
+                        navigator.pop()
                     }
-                    navigator.pop()
                 }
             )
         }
@@ -91,16 +98,22 @@ fun NavGraph(
             }
 
             if (!shouldOnboard.value) {
-                Login(askedForARCoreAvailability = askedForARCoreAvailability,
-                    onSuccessfulAuth = { token ->
-                    if(token != null) {
-                        coroutineScope.launch {
-                            context.writeAuthToken(token)
-                        }
-                    }
-                    navigator.pop()
-                    navigator.navigate(NavDestination.MainDestination)
-                })
+                NavAnimationFade(navigator = navigator) {
+                    Login(askedForARCoreAvailability = askedForARCoreAvailability,
+                        onSuccessfulAuth = { token ->
+                            if(token != null) {
+                                coroutineScope.launch {
+                                    context.writeAuthToken(token)
+                                }
+                            }
+
+                            coroutineScope.launch {
+                                navigator.pop()
+                            }
+
+                            navigator.navigate(NavDestination.MainDestination)
+                        })
+                }
             }
         }
         navigation(
@@ -108,6 +121,7 @@ fun NavGraph(
             startDestination = NavDestination.MainDestination.ModelSelection.route
         ) {
             main(
+                navigator = navigator,
                 askedForARCoreAvailability = askedForARCoreAvailability,
             ) {
 

@@ -2,7 +2,7 @@ package com.lozanov.viridum.state
 
 import com.lozanov.viridum.model.Model
 
-sealed class NetworkState : ARState, SketchFabModelState, SketchFabOAuthState {
+sealed class NetworkState : ARState, SketchFabModelState {
     data class Error(val error: Exception) : NetworkState()
 
     object Loading : NetworkState()

@@ -19,4 +19,5 @@
     <string name="camera_rationale">We need to access your camera in order to use AR functionality.</string>
     <string name="logout">Logout</string>
     <string name="three_dimensional">3D</string>
+    <string name="error_ar">\"Something went wrong with assessing AR availability! Please, try again later!\"</string>
 </resources>
