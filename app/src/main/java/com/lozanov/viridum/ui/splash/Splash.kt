@@ -26,7 +26,7 @@ fun Splash(onSplashFinish: () -> Unit) {
     val splashDuration = remember { 1500L }
 
     SplashContent()
-    LaunchedEffect(keys = emptyArray()) {
+    LaunchedEffect(keys = arrayOf(splashDuration)) {
         delay(splashDuration)
         onSplashFinish()
     }
@@ -35,7 +35,7 @@ fun Splash(onSplashFinish: () -> Unit) {
 @Composable
 fun SplashContent() {
     Box(modifier = Modifier
-            .fillMaxSize().shadow(2.dp)) {
+            .fillMaxSize()) {
         Image(
             painter = painterResource(id = R.drawable.logo),
             contentDescription = stringResource(id = R.string.logo),

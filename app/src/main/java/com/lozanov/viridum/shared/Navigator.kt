@@ -1,5 +1,6 @@
 package com.lozanov.viridum.shared
 
+import android.util.Log
 import androidx.navigation.NavBackStackEntry
 import kotlinx.coroutines.flow.*
 import java.lang.IllegalStateException
@@ -20,7 +21,7 @@ class Navigator(
         _latestNavigateDestination.map {
             when {
                 it == NavDestination.Root
-                        && _latestNavigateDestination.replayCache.isNotEmpty() -> { // second condition guards against initial popping (may not work?)
+                        && _latestNavigateDestination.replayCache.size > 1 -> { // second condition guards against initial popping (may not work?)
                     LatestNavigationState.Exit
                 }
                 _currentlyNav == true -> {
@@ -38,8 +39,9 @@ class Navigator(
     fun navigate(dest: NavDestination,
                  backStackEntry: NavBackStackEntry? = null) {
         val performNavigation = {
-            _latestNavigateDestination.tryEmit(dest)
+            Log.i("Navigator", "navigate -> dest: $dest")
             _currentlyNav = true
+            _latestNavigateDestination.tryEmit(dest)
         }
 
         if(backStackEntry != null) {
@@ -51,24 +53,39 @@ class Navigator(
         }
     }
 
-    // TODO: Fix popping behaviour (this DOES NOT work like a normal backstack)
-    // ex replay cache: A -> B
-    // pop B
-    // A -> B -> A
-    // pop A: A -> B -> A -> B (Dumb as fuck???)
-    suspend fun pop(until: NavDestination? = null) {
-        if(!_latestNavigateDestination.replayCache.contains(until)) {
+    // TODO: Add exemption from special popping behaviour for tabbed navigation?
+    // TODO: Since it has to keep history, make it so that it DOES take last index - 1 because of tab history
+    suspend fun pop(rawPop: Boolean = false, until: NavDestination? = null) {
+        Log.i("Navigator",
+            "pop -> _latestNavigateDestination replay: ${_latestNavigateDestination.replayCache}; until: $until")
+        if(until != null &&
+                !_latestNavigateDestination.replayCache.contains(until)) {
             throw IllegalStateException("Cannot pop destination not contained in navDestination replay cache " +
                     "(i.e. previous destinations)!")
         }
 
+        _currentlyNav = false
+
         if(until == null) {
+            val isReplayCachePoppable = _latestNavigateDestination.replayCache.lastIndex > 0
+
+            if(rawPop) {
+                if(isReplayCachePoppable) {
+                    _latestNavigateDestination.tryEmit(_latestNavigateDestination.replayCache[
+                            _latestNavigateDestination.replayCache.lastIndex - 1])
+                }
+                return
+            }
+
             val isLastDestinationNotRoot = if(destinationsExitOnPop != null && destinationsExitOnPop.isNotEmpty()) {
                 !destinationsExitOnPop.contains(
                     _latestNavigateDestination.lastOrNull() ?: destinationsExitOnPop[0])
             } else false
 
-            val rootOfLast = if(_latestNavigateDestination.replayCache.lastIndex > 0 &&
+            Log.i("Navigator",
+                "pop -> isLastDestinationNotRoot: $isLastDestinationNotRoot")
+
+            val rootOfLast = if(isReplayCachePoppable &&
                     isLastDestinationNotRoot) {
                 val lastDestination = _latestNavigateDestination.replayCache[
                         _latestNavigateDestination.replayCache.lastIndex - 1]
@@ -77,6 +94,9 @@ class Navigator(
             } else {
                 NavDestination.Root
             }
+
+            Log.i("Navigator",
+                "pop -> isLastDestinationNotRoot: $isLastDestinationNotRoot; rootOfLast: $rootOfLast")
 
             _latestNavigateDestination.tryEmit(rootOfLast)
         } else {
@@ -91,8 +111,6 @@ class Navigator(
 
             _latestNavigateDestination.tryEmit(until)
         }
-
-        _currentlyNav = false
     }
 
     sealed class LatestNavigationState {

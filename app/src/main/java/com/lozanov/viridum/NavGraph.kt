@@ -1,5 +1,6 @@
 package com.lozanov.viridum
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.*
@@ -11,17 +12,17 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.PagerState
 import com.lozanov.viridum.persistence.*
 import com.lozanov.viridum.shared.NavAnimationFade
-import com.lozanov.viridum.shared.NavAnimationSlide
 import com.lozanov.viridum.shared.NavDestination
 import com.lozanov.viridum.shared.Navigator
+import com.lozanov.viridum.shared.navPop
 import com.lozanov.viridum.ui.auth.Login
 import com.lozanov.viridum.ui.main.main
 import com.lozanov.viridum.ui.onboarding.Onboarding
 import com.lozanov.viridum.ui.splash.Splash
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
@@ -36,46 +37,46 @@ fun NavGraph(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    navigator.latestNavigationState
-        .distinctUntilChanged()
-        .collectAsState(initial = Navigator.LatestNavigationState.Idle).value.also { state ->
-        when(state) {
-            is Navigator.LatestNavigationState.Exit -> {
-                exit()
-            }
-            is Navigator.LatestNavigationState.Navigate -> {
-                navController.navigate(state.dest.route)
-            }
-            is Navigator.LatestNavigationState.Pop -> {
-                if(state.until == null) {
-                    navController.popBackStack()
-                } else {
-                    navController.popBackStack(state.until.route, false)
+    LaunchedEffect(key1 = navigator) {
+        navigator.latestNavigationState
+            .distinctUntilChanged()
+            .collectLatest { state ->
+                Log.i("NavGraph", "navState: $state")
+                when(state) {
+                    is Navigator.LatestNavigationState.Exit -> {
+                        exit()
+                    }
+                    is Navigator.LatestNavigationState.Navigate -> {
+                        navController.navigate(state.dest.route)
+                    }
+                    is Navigator.LatestNavigationState.Pop -> {
+                        if(state.until == null) {
+                            navController.popBackStack()
+                        } else {
+                            navController.popBackStack(state.until.route, false)
+                        }
+                    }
+                    is Navigator.LatestNavigationState.Idle -> {}
                 }
             }
-            is Navigator.LatestNavigationState.Idle -> {}
-        }
     }
 
-    val shouldOnboard = context.readOnboardingValid().collectAsState(initial = true)
-    val isAuthenticated = context.readAuthToken().map { it == null }.collectAsState(initial = true)
+    val hasOnboarded = context.readOnboardingValid().collectAsState(initial = false)
+    val isAuthenticated = context.readAuthToken().map { it != null }.collectAsState(initial = false)
     val askedForARCoreAvailability = rememberSaveable { mutableStateOf(false) }
 
     NavHost(navController = navController,
         startDestination = NavDestination.Splash.route) {
         composable(NavDestination.Splash.route) {
             BackHandler {
-                exit()
+                coroutineScope.navPop(navigator)
             }
 
             Splash {
-                coroutineScope.launch {
-                    navigator.pop()
-                }
-
+                navController.popBackStack() // uhhhhhh, iffy but exception (hopefully)
                 navigator.navigate(
                     when {
-                        shouldOnboard.value -> NavDestination.Onboarding
+                        !hasOnboarded.value -> NavDestination.Onboarding
                         isAuthenticated.value -> NavDestination.MainDestination
                         else -> NavDestination.Login
                     }
@@ -84,20 +85,23 @@ fun NavGraph(
         }
         composable(NavDestination.Onboarding.route) {
             Onboarding(
+                back = {
+                    coroutineScope.navPop(navigator)
+                },
                 onboardingComplete = {
                     coroutineScope.launch {
-                        context.writeOnboardingValid(false)
-                        navigator.pop()
+                        context.writeOnboardingValid(true)
                     }
+                    coroutineScope.navPop(navigator)
                 }
             )
         }
         composable(NavDestination.Login.route) {
             BackHandler {
-                exit()
+                coroutineScope.navPop(navigator)
             }
 
-            if (!shouldOnboard.value) {
+            if (hasOnboarded.value) {
                 NavAnimationFade(navigator = navigator) {
                     Login(askedForARCoreAvailability = askedForARCoreAvailability,
                         onSuccessfulAuth = { token ->
@@ -107,9 +111,7 @@ fun NavGraph(
                                 }
                             }
 
-                            coroutineScope.launch {
-                                navigator.pop()
-                            }
+                            coroutineScope.navPop(navigator)
 
                             navigator.navigate(NavDestination.MainDestination)
                         })

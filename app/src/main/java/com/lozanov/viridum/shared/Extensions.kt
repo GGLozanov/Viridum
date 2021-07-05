@@ -205,3 +205,13 @@ fun Context.getActivity(): AppCompatActivity? {
     }
     return null
 }
+
+fun CoroutineScope.navPop(navigator: Navigator,
+                          until: NavDestination? = null,
+                          rawPop: Boolean = false,
+                          onPop: (() -> Unit)? = null) {
+    launch {
+        navigator.pop(rawPop = rawPop, until = until)
+        onPop?.invoke()
+    }
+}

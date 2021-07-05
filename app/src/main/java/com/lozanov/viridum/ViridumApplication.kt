@@ -85,6 +85,7 @@ private fun AppBar(navigator: Navigator, currentDestination: NavDestination) {
             if(currentDestination.hasLogoutAction) {
                 IconButton(onClick = {
                     // TODO: Send logout event (ViewModel?? Listener somewhere?)
+                    // TODO: auth state listener and/or just datastore method call to trigger listener in NavGraph.kt
                 }) {
                     Icon(painter =
                         painterResource(id = R.drawable.ic_baseline_exit_to_app_24),
@@ -102,7 +103,6 @@ private fun TabbedNav(navigator: Navigator,
                       routes: List<MainTabs>,
 ) {
     val currentRoute = navBackStackEntry.value?.destination?.route
-        ?: MainTabs.MODEL_SELECT.destination.route
     val currentDestination = routes.find { it.destination.route == currentRoute }
 
     if (currentDestination != null) {
@@ -136,5 +136,5 @@ private fun TabbedNav(navigator: Navigator,
 private enum class MainTabs(@DrawableRes val icon: Int,
                             val destination: NavDestination) {
     MODEL_SELECT(R.drawable.ic_baseline_file_copy_24, NavDestination.MainDestination.ModelSelection),
-    AR_SCREEN(R.string.view_model, NavDestination.MainDestination.ARScreen)
+    AR_SCREEN(R.drawable.ic_baseline_3d_rotation_24, NavDestination.MainDestination.ARScreen)
 }

@@ -1,5 +1,6 @@
 package com.lozanov.viridum.shared
 
+import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NamedNavArgument
@@ -29,17 +30,21 @@ sealed class NavDestination(val route: String = "",
     }
 
     companion object {
+        const val TAG = "NavDestination"
+        
         //  not actually a composable, just need the scoping provided
         @Composable
-        fun findDestinationByRoute(route: String?): NavDestination =
-            when(route) {
-                Root.route -> Root
+        fun findDestinationByRoute(route: String?): NavDestination {
+            Log.i(TAG, "findDestinationByRoute -> route: ${route}")
+            return when(route) {
+                null, Root.route -> Root
                 Login.route -> Login
                 Onboarding.route -> Onboarding
                 MainDestination.route -> MainDestination
                 MainDestination.ARScreen.route -> MainDestination.ARScreen
                 MainDestination.ModelSelection.route -> MainDestination.ModelSelection
                 else -> throw IllegalArgumentException("Invalid route for findDestinationByRoute call!")
-            }
+            }   
+        }
     }
 }

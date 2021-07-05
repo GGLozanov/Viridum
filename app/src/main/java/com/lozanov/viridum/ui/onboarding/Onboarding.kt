@@ -1,5 +1,6 @@
 package com.lozanov.viridum.ui.onboarding
 
+import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -21,10 +22,26 @@ import kotlinx.coroutines.launch
 
 @ExperimentalPagerApi
 @Composable
-fun Onboarding(onboardingComplete: () -> Unit) {
+fun Onboarding(
+    back: () -> Unit,
+    onboardingComplete: () -> Unit
+) {
     val pagerState = rememberPagerState(pageCount = PageData.PAGE_COUNT)
+    val coroutineScope = rememberCoroutineScope()
 
-    Column(Modifier.fillMaxSize()) {
+    BackHandler {
+        if(pagerState.currentPage == 0) {
+            back()
+        } else {
+            coroutineScope.launch {
+                pagerState.animateScrollToPage(
+                    pagerState.currentPage - 1
+                )
+            }
+        }
+    }
+
+    Column {
         HorizontalPager(
             state = pagerState, modifier = Modifier
                 .weight(1f)
