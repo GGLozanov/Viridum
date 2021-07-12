@@ -65,8 +65,14 @@ fun NavGraph(
     val isAuthenticated = context.readAuthToken().map { it != null }.collectAsState(initial = false)
     val askedForARCoreAvailability = rememberSaveable { mutableStateOf(false) }
 
+    if(!isAuthenticated.value && hasOnboarded.value
+        && navController.currentDestination?.route != NavDestination.Splash.route) {
+        coroutineScope.navPop(navigator, until = NavDestination.Login)
+    }
+
     NavHost(navController = navController,
-        startDestination = NavDestination.Splash.route) {
+        startDestination = NavDestination.Splash.route
+    ) {
         composable(NavDestination.Splash.route) {
             BackHandler {
                 coroutineScope.navPop(navigator)
@@ -125,9 +131,7 @@ fun NavGraph(
             main(
                 navigator = navigator,
                 askedForARCoreAvailability = askedForARCoreAvailability,
-            ) {
-
-            }
+            )
         }
     }
 }

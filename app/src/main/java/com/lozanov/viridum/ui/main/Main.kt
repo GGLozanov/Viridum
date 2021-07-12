@@ -17,7 +17,6 @@ import com.lozanov.viridum.shared.Navigator
 fun NavGraphBuilder.main(
     askedForARCoreAvailability: State<Boolean>,
     navigator: Navigator,
-    onLogout: () -> Unit,
 ) {
     // TODO: Use onLogout
     composable(NavDestination.MainDestination.ModelSelection.route) {

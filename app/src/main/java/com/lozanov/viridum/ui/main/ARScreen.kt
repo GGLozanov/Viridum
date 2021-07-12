@@ -1,5 +1,6 @@
 package com.lozanov.viridum.ui.main
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -18,6 +19,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import com.google.ar.core.Config
+import com.google.ar.core.Session
 import com.lozanov.viridum.R
 
 @Composable
@@ -29,6 +32,22 @@ fun ARScreen(
         Text(text = stringResource(R.string.ar_screen),
             modifier = Modifier.align(Alignment.Center))
     }
+}
+
+fun Context.createARSession() {
+    // Create a new ARCore session.
+    val session = Session(this)
+
+    // Create a session config.
+    val config = Config(session)
+
+    // Do feature-specific operations here, such as enabling depth or turning on
+    // support for Augmented Faces.
+
+    // Configure the session.
+    session.configure(config)
+
+    // session.close()
 }
 
 //@Composable

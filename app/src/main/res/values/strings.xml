@@ -20,4 +20,6 @@
     <string name="logout">Logout</string>
     <string name="three_dimensional">3D</string>
     <string name="error_ar">\"Something went wrong with assessing AR availability! Please, try again later!\"</string>
+    <string name="choose_file">Choose a 3D Model file.</string>
+    <string name="choose_file_hint">Storage Model</string>
 </resources>

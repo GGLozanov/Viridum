@@ -39,7 +39,7 @@ suspend fun Context.writeOnboardingValid(valid: Boolean? = null) {
     }
 }
 
-suspend fun Context.writeAuthToken(token: String) {
+suspend fun Context.writeAuthToken(token: String?) {
     val authKey = stringPreferencesKey(DataStorePrefKeys.AUTH_TOKEN)
     dataStore.edit { settings ->
         settings[authKey] = token

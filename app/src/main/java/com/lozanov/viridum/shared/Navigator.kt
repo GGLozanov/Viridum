@@ -103,6 +103,8 @@ class Navigator(
             val backstackPopUntil = _latestNavigateDestination.replayCache
                 .subList(_latestNavigateDestination.replayCache
                     .indexOf(until), _latestNavigateDestination.replayCache.lastIndex)
+            Log.i("Navigator",
+                "Backstack pop until: $backstackPopUntil")
 
             if(destinationsExitOnPop?.any { backstackPopUntil.contains(it) } == true) { // pop destination met on backstack
                 _latestNavigateDestination.tryEmit(NavDestination.Root)
@@ -124,6 +126,6 @@ class Navigator(
     }
 
     companion object {
-        private const val MAX_NAV_DESTINATIONS_REPLAY = 50
+        private const val MAX_NAV_DESTINATIONS_REPLAY = 100
     }
 }

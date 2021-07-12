@@ -1,5 +1,6 @@
 package com.lozanov.viridum
 
+import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -23,9 +24,11 @@ import com.google.accompanist.insets.ProvideWindowInsets
 import com.google.accompanist.insets.navigationBarsHeight
 import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.pager.*
+import com.lozanov.viridum.persistence.writeAuthToken
 import com.lozanov.viridum.shared.NavDestination
 import com.lozanov.viridum.shared.NavDestination.Companion.findDestinationByRoute
 import com.lozanov.viridum.shared.Navigator
+import com.lozanov.viridum.shared.navPop
 import com.lozanov.viridum.ui.main.ARScreen
 import com.lozanov.viridum.ui.main.ModelSelection
 import com.lozanov.viridum.ui.onboarding.OnboardingSegment
@@ -62,6 +65,7 @@ fun ViridumApplication(navigator: Navigator, exit: () -> Unit) {
 private fun AppBar(navigator: Navigator, currentDestination: NavDestination) {
     val title = currentDestination.titleId ?: return
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     TopAppBar(title = {
         Text(text = stringResource(title))
@@ -84,8 +88,9 @@ private fun AppBar(navigator: Navigator, currentDestination: NavDestination) {
         actions = {
             if(currentDestination.hasLogoutAction) {
                 IconButton(onClick = {
-                    // TODO: Send logout event (ViewModel?? Listener somewhere?)
-                    // TODO: auth state listener and/or just datastore method call to trigger listener in NavGraph.kt
+                    coroutineScope.launch {
+                        context.writeAuthToken(null)
+                    }
                 }) {
                     Icon(painter =
                         painterResource(id = R.drawable.ic_baseline_exit_to_app_24),
@@ -104,11 +109,16 @@ private fun TabbedNav(navigator: Navigator,
 ) {
     val currentRoute = navBackStackEntry.value?.destination?.route
     val currentDestination = routes.find { it.destination.route == currentRoute }
+    val coroutineScope = rememberCoroutineScope()
 
     if (currentDestination != null) {
 //        pagerState.value = rememberPagerState(pageCount = routes.size,
 //            initialPage = currentDestination.ordinal)
 
+        BackHandler {
+            coroutineScope.navPop(navigator, rawPop = true)
+        }
+    
         TabRow(selectedTabIndex = currentDestination.ordinal, modifier =
                 Modifier.navigationBarsHeight(additional = 56.dp)) {
             routes.forEach {
